@@ -1,6 +1,7 @@
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
 
+  // Get vehicleNumber from query string
   const { vehicleNumber } = req.query;
 
   if (!vehicleNumber) {
@@ -10,6 +11,7 @@ export default async function handler(req, res) {
   const apiUrl = 'http://67.205.160.206:5000/api/vehicle/searchvehicle';
 
   try {
+    // Send POST request with JSON body
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -21,8 +23,16 @@ export default async function handler(req, res) {
       body: JSON.stringify({ vehicleNumber })
     });
 
-    const data = await response.json();
-    return res.status(200).json(data);
+    // Get response text first
+    const text = await response.text();
+
+    // Try parsing JSON, if fails return raw text
+    try {
+      const data = JSON.parse(text);
+      return res.status(200).json(data);
+    } catch (err) {
+      return res.status(500).json({ error: "Invalid JSON response", response: text });
+    }
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
